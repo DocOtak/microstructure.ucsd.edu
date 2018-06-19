@@ -51,11 +51,15 @@ function listOrFiller(jsx_alm_array){
 
 }
 
-var IntroPane = React.createClass({
-  getInitialState: function(){
-    return {open:false}
-  },
-  render: function(){
+class IntroPane extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {
+      open:false
+    }
+  }
+
+  render(){
     return(
 
       <Panel header={<h3>Welcome to the NSF-funded Microstructure Database</h3>}>
@@ -75,11 +79,6 @@ var IntroPane = React.createClass({
             <p>
               Data digitized from PEQUOD, PATCHEX, and WESPAC historical documents include mean profiles of dissipation. 
             </p>
-
-            {/* 
-                  <p>Database entries have project specific DOIs which should be cited when the data is used in publication.
-                  </p>
-                  */}
 
             <p>
               When available, additional supplementary data is provided such as shipboard ADCP and meteorological data.
@@ -102,30 +101,18 @@ var IntroPane = React.createClass({
       </Panel>
     )
   }
-})
+}
 
-var CruisePage = React.createClass({
-  cruiseListUpdate: function(e){
-    this.setState({cruises:cruises});
-  },
-  getInitialState: function(){
-    return {cruises:cruises}
-  },
-  componentDidMount: function(){
-    window.addEventListener("cruises", this.cruiseListUpdate);
-  },
-  componentWillUnmount: function(){
-    window.removeEventListener("cruises", this.cruiseListUpdate);
-  },
-  render: function(){
-    if (this.state.cruises.length === 0){
+class CruisePage extends React.Component {
+  render(){
+    console.log(this.props)
+    if (this.props.cruises.length === 0){
       return <div>Loading...</div>
     }
-    console.log(this.props)
-    var cruise = getCruiseByExpocode(this.props.match.params.expocode, this.state.cruises);
-    var files = getCruiseFilesByExpocode(this.props.match.params.expocode, this.state.cruises);
+    var cruise = getCruiseByExpocode(this.props.match.params.expocode, this.props.cruises);
+    var files = getCruiseFilesByExpocode(this.props.match.params.expocode, this.props.cruises);
 
-    var expocode_link = <a href={cchdo_url + "/cruise/" + cruise.expocode}>{cruise.expocode}</a>;
+    var expocode_link = <a href={`${cchdo_url}/cruise/${cruise.expocode}`}>{cruise.expocode}</a>;
     
     var institutions = [];
     var hrp_owners= listOrFiller(cruise["participants"].map(function(person){
@@ -304,25 +291,12 @@ var CruisePage = React.createClass({
         </div>
         )
   }
-});
+}
 
-var CruiseList = React.createClass({
-  cruiseListUpdate: function(e){
-    this.setState({cruises:cruises});
-  },
-  getInitialState: function(){
-    return {cruises:cruises}
-  },
-  componentDidMount: function(){
-    window.addEventListener("cruises", this.cruiseListUpdate);
-  },
-  componentWillUnmount: function(){
-    window.removeEventListener("cruises", this.cruiseListUpdate);
-  },
-  render: function() {
-    console.log(this.props);
+class CruiseList extends React.Component{
+  render(){
 
-    var programs = this.state.cruises.map(function (program){
+    var programs = this.props.cruises.map(function (program){
       return (
         <tr key={program.cruise.expocode}>
           <td ><Link to={`/cruise/${program.cruise.expocode}`}>{program.cruise.sites["microstructure.ucsd.edu"].name}</Link>
@@ -371,34 +345,45 @@ var CruiseList = React.createClass({
       </div>
     )
   }
-});
+}
 
 
-var Microstructure = React.createClass({
-  getInitialState: function() {
-    return {
-      cruises: []
-    };
-  },
+class Microstructure extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {cruises:[]}
+  }
 
-  componentDidMount: function() {
-    updateCruiseList();
-  },
+  componentDidMount() {
+    fetch(api_url)
+      .then(response => response.json())
+      .then(json => json.cruises.sort((a,b) => {
+        let cmp_a = a.cruise.sites["microstructure.ucsd.edu"].name;
+        let cmp_b = b.cruise.sites["microstructure.ucsd.edu"].name;
+        return cmp_a.localeCompare(cmp_b);
+        }))
+      .then(cruises => this.setState({cruises:cruises}))
 
-  render: function(){
+  }
+
+  render(){
     return (
         <div>
         <h3>microstructure.ucsd.edu</h3>
         <HashRouter>
         <div>
-          <Route exact path="/" component={CruiseList} />
-          <Route path="/cruise/:expocode" component={CruisePage} />
+          <Route exact path="/" render={(props) => {
+            return <CruiseList {...this.state}  {...props}/>
+          }} />
+        <Route path="/cruise/:expocode" render={(props) =>{
+          return <CruisePage {...this.state} {...props}/>
+        }} />
           </div>
         </HashRouter>
         </div>
         );
   }
-});
+};
 
 class App extends Component {
   render() {
