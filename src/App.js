@@ -8,23 +8,6 @@ import './bootstrap/css/bootstrap.min.css';
 const api_url = "https://cchdo.ucsd.edu/api/v1/pipe/site/microstructure.ucsd.edu";
 const cchdo_url = "https://cchdo.ucsd.edu";
 
-var cruises = [];
-const cruisesEvent = new Event("cruises");
-
-
-function updateCruiseList(){
-  fetch(api_url).then(function(response){
-    response.json().then(function(json){
-      cruises = json.cruises.sort(function(a, b){
-        var a_sort_value = a.cruise.sites["microstructure.ucsd.edu"].name;
-        var b_sort_value = b.cruise.sites["microstructure.ucsd.edu"].name;
-        return a_sort_value.localeCompare(b_sort_value);
-        });
-      window.dispatchEvent(cruisesEvent);
-    });
-  });
-};
-
 function getCruiseByExpocode(expocode, cruises){
   for (var i=0; i < cruises.length; i++){
     if (cruises[i].cruise.expocode === expocode){
@@ -61,51 +44,81 @@ class IntroPane extends React.Component {
 
   render(){
     return(
+      <Panel>
+        <Panel.Heading>
+          <Panel.Title componentClass="h3">Welcome to the NSF-funded Microstructure Database</Panel.Title>
+        </Panel.Heading>
+        <Panel.Body>
+          <p>
+            This database provides a compilation of various datasets obtained from ocean microstructure profilers capable of measuring the smallest scales of oceanic turbulence.
+            <a onClick={ ()=> this.setState({ open: !this.state.open })}> more >></a>
+          </p>
 
-      <Panel header={<h3>Welcome to the NSF-funded Microstructure Database</h3>}>
-        <p>
-          This database provides a compilation of various datasets obtained from ocean microstructure profilers capable of measuring the smallest scales of oceanic turbulence.
-          <a onClick={ ()=> this.setState({ open: !this.state.open })}> more >></a>
-        </p>
+          <Collapse in={this.state.open}>
+            <div>
+              <p>
+                Data from microstructure programs have been provided by the data owners (PIs) or has been digitized from historical papers. 
+                For the data given from PIs, data has been archived as CF-compliant NETCDF files with 1-m binned data, where possible, saving the variables: time, depth, pressure, temperature, salinity, latitude, longitude as well as the newly designated variables: epsilon (ocean turbulent kinetic energy dissipation rate in W/kg), and when available, chi-t (ocean dissipation rate of thermal variance from microtemperature in degrees C<sup>2</sup>/s), and chi-c (ocean dissipation rate of thermal variance from microconductivity in degrees C<sup>2</sup>/s).
+                Database entries include the program names and program PIs as well cruise information (research ship, ports of entry and exit, cruise dates, and chief scientist).
+                Relevant cruise reports, program related papers and other documents are also contained in the data archive.
+              </p>            
+              <p>
+                Data digitized from PEQUOD, PATCHEX, and WESPAC historical documents include mean profiles of dissipation. 
+              </p>
 
-        <Collapse in={this.state.open}>
-          <div>
-            <p>
-              Data from microstructure programs have been provided by the data owners (PIs) or has been digitized from historical papers. 
-              For the data given from PIs, data has been archived as CF-compliant NETCDF files with 1-m binned data, where possible, saving the variables: time, depth, pressure, temperature, salinity, latitude, longitude as well as the newly designated variables: epsilon (ocean turbulent kinetic energy dissipation rate in W/kg), and when available, chi-t (ocean dissipation rate of thermal variance from microtemperature in degrees C<sup>2</sup>/s), and chi-c (ocean dissipation rate of thermal variance from microconductivity in degrees C<sup>2</sup>/s).
-              Database entries include the program names and program PIs as well cruise information (research ship, ports of entry and exit, cruise dates, and chief scientist).
-              Relevant cruise reports, program related papers and other documents are also contained in the data archive.
-            </p>            
-            <p>
-              Data digitized from PEQUOD, PATCHEX, and WESPAC historical documents include mean profiles of dissipation. 
-            </p>
+              <p>
+                When available, additional supplementary data is provided such as shipboard ADCP and meteorological data.
+                This data has been provided by the data owners (PIs) and has been included in the database as is without further quality checks by CCHDO.
+              </p>
+              <p>
+                Newly obtained microstructure data can be uploaded to the microstructure database by sending 1-m binned data to the CCHDO group at <a href={cchdo_url + "/submit"}>{cchdo_url + "/submit"}</a>.
+              </p>    
+              <p>
+                Citation for data sets that had pressure and/or depth cacluated using the GSW Oceanographic Toolbox:  McDougall, T.J. and P.M. Barker, 2011: Getting started with TEOS-10 and the Gibbs Seawater (GSW) Oceanographic Toolbox, 28pp., SCOR/IAPSO WG127, ISBN 978-0-646-55621-5. 
+              </p>
 
-            <p>
-              When available, additional supplementary data is provided such as shipboard ADCP and meteorological data.
-              This data has been provided by the data owners (PIs) and has been included in the database as is without further quality checks by CCHDO.
-            </p>
-            <p>
-              Newly obtained microstructure data can be uploaded to the microstructure database by sending 1-m binned data to the CCHDO group at <a href={cchdo_url + "/submit"}>{cchdo_url + "/submit"}</a>.
-            </p>    
-            <p>
-              Citation for data sets that had pressure and/or depth cacluated using the GSW Oceanographic Toolbox:  McDougall, T.J. and P.M. Barker, 2011: Getting started with TEOS-10 and the Gibbs Seawater (GSW) Oceanographic Toolbox, 28pp., SCOR/IAPSO WG127, ISBN 978-0-646-55621-5. 
-            </p>
-
-            <p>
-              As part of the Climate Process Team on internal wave driven mixing and creation of this microstructure database, a corresponding GitHub repository has been set up as a community supported and maintained set of best practice routines for calculating various mixing related variables. <a href="https://github.com/OceanMixingCommunity/Standard-Mixing-Routines">https://github.com/OceanMixingCommunity/Standard-Mixing-Routines</a>
-            </p>
-            <p>Andy Pickering wrote a python notebook to show how to extract the microstructure database data. This notebook, Examine_mixing_data.ipynb, contains examples of reading and plotting netcdf files in the mixing database with python. It is part of the Ocean Mixing Community GitHub repository Standard-Mixing-Routines. <a href="https://github.com/OceanMixingCommunity/Standard-Mixing-Routines/blob/master/Examine_mixing_data.ipynb">Reading Mixing Database Files with Python</a>
-            </p>
-          </div>
-        </Collapse>
+              <p>
+                As part of the Climate Process Team on internal wave driven mixing and creation of this microstructure database, a corresponding GitHub repository has been set up as a community supported and maintained set of best practice routines for calculating various mixing related variables. <a href="https://github.com/OceanMixingCommunity/Standard-Mixing-Routines">https://github.com/OceanMixingCommunity/Standard-Mixing-Routines</a>
+              </p>
+              <p>Andy Pickering wrote a python notebook to show how to extract the microstructure database data. This notebook, Examine_mixing_data.ipynb, contains examples of reading and plotting netcdf files in the mixing database with python. It is part of the Ocean Mixing Community GitHub repository Standard-Mixing-Routines. <a href="https://github.com/OceanMixingCommunity/Standard-Mixing-Routines/blob/master/Examine_mixing_data.ipynb">Reading Mixing Database Files with Python</a>
+              </p>
+            </div>
+          </Collapse>
+        </Panel.Body>
       </Panel>
     )
   }
 }
 
+class FileList extends React.Component {
+  render(){
+    const files = this.props.files;
+    const dataType = this.props.dataType;
+    const role = this.props.fileRole;
+
+    const filteredFiles = files
+                            .filter(file => file.role === role)
+                            .filter(file => file.data_type === dataType)
+
+    const fileList = filteredFiles.map(file => {
+      return <li key={file.file_hash}><a href={`${cchdo_url}${file.file_path}`}>{file.file_name}</a></li>
+    })
+    return fileList
+  }
+}
+
+class ConditionalRender extends React.Component{
+  render(){
+    if(this.props.condition !== true){
+      return null;
+    } else {
+      return this.props.children;
+    }
+  }
+}
+
 class CruisePage extends React.Component {
   render(){
-    console.log(this.props)
     if (this.props.cruises.length === 0){
       return <div>Loading...</div>
     }
@@ -142,75 +155,9 @@ class CruisePage extends React.Component {
           <li key={inst}>{inst}</li>
           )
     }));
-    
 
-    var dataset = files.map(function(file){
-      if (file.role === 'dataset' && file.data_type === 'hrp'){
-      return (
-          <li key={file.file_hash}><a href={cchdo_url + file.file_path}>{file.file_name}</a></li>
-          )
-      }
-    });
-    var reports = files.map(function(file){
-      if (file.role === 'dataset' && file.data_type === 'documentation'){
-      return (
-          <li key={file.file_hash}><a href={cchdo_url + file.file_path}>{file.file_name}</a></li>
-          )
-      }
-    });
-    var intermediate = files.map(function(file){
-      if (file.role === 'intermediate' && file.data_type === 'hrp'){
-      return (
-          <li key={file.file_hash}><a href={cchdo_url + file.file_path}>{file.file_name}</a></li>
-          )
-      }
-    });
-
-    var raw = files.map(function(file){
-      if (file.role === 'raw' && file.data_type === 'hrp'){
-      return (
-          <li key={file.file_hash}><a href={cchdo_url + file.file_path}>{file.file_name}</a></li>
-          )
-      }
-    });
-
-    var intermediate_files = function(intermediate) {
-      if (intermediate) {
-        return (
-          <div>
-          <h5>Intermediate</h5>
-          <ul>
-            {intermediate}
-          </ul>
-          </div>
-        )
-      }
-    }
-
-    var raw_files = function(raw) {
-      if (raw) {
-        return (
-          <div>
-          <h5>Raw</h5>
-          <ul>
-            {raw}
-          </ul>
-          </div>
-        )
-      }
-    }
-
-    var supplemental_files = function(raw, intermediate) {
-      if (raw || intermediate) {
-        return (
-          <div>
-          <h4>Data As Received</h4>
-          {intermediate_files}
-          {raw_files}
-          </div>
-        )
-      }
-    }
+    const intermediate = <FileList files={files} fileRole="intermediate" dataType="hrp" />
+    const raw = <FileList files={files} fileRole="raw" dataType="hrp" />
 
     var references;
     if (cruise.hasOwnProperty("references")){
@@ -277,15 +224,30 @@ class CruisePage extends React.Component {
         </dl>
         <h4>Microstructure NetCDF Dataset</h4>
         <ul>
-          {dataset}
+          <FileList files={files} fileRole="dataset" dataType="hrp" />
         </ul>
+
         <h4>Reports</h4>
         <ul>
-          {reports}
+          <FileList files={files} fileRole="dataset" dataType="documentation" />
         </ul>
 
 
-        {supplemental_files}
+        <ConditionalRender condition={(raw || intermediate)}>
+          <h4>Data As Received</h4>
+          <ConditionalRender condition={(intermediate)}>
+            <h5>Intermediate</h5>
+            <ul>
+              {intermediate}
+            </ul>
+          </ConditionalRender>
+          <ConditionalRender condition={(raw)}>
+            <h5>Raw</h5>
+            <ul>
+              {raw}
+            </ul>
+          </ConditionalRender>
+        </ConditionalRender>
 
         
         </div>
@@ -361,27 +323,27 @@ class Microstructure extends React.Component{
         let cmp_a = a.cruise.sites["microstructure.ucsd.edu"].name;
         let cmp_b = b.cruise.sites["microstructure.ucsd.edu"].name;
         return cmp_a.localeCompare(cmp_b);
-        }))
+      }))
       .then(cruises => this.setState({cruises:cruises}))
 
   }
 
   render(){
     return (
-        <div>
+      <div>
         <h3>microstructure.ucsd.edu</h3>
         <HashRouter>
-        <div>
-          <Route exact path="/" render={(props) => {
-            return <CruiseList {...this.state}  {...props}/>
+          <div>
+            <Route exact path="/" render={(props) => {
+              return <CruiseList {...this.state}  {...props}/>
+            }} />
+          <Route path="/cruise/:expocode" render={(props) =>{
+            return <CruisePage {...this.state} {...props}/>
           }} />
-        <Route path="/cruise/:expocode" render={(props) =>{
-          return <CruisePage {...this.state} {...props}/>
-        }} />
-          </div>
-        </HashRouter>
-        </div>
-        );
+      </div>
+    </HashRouter>
+  </div>
+    );
   }
 };
 
